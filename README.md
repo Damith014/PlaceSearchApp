@@ -113,7 +113,6 @@ USE_API_MOCK=true
 
 - API failure shows:
   - **React Native Alert Popup**
-  - **Paper Snackbar with Retry option**
 - Offline? → Switch to **Mock Mode**
 
 ---
