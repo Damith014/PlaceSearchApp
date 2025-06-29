@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, FlatList, TouchableOpacity, SafeAreaView } from 'react-native';
+import {
+  View,
+  FlatList,
+  TouchableOpacity,
+  SafeAreaView,
+  Alert,
+} from 'react-native';
 import { Text, Divider, Card, ActivityIndicator } from 'react-native-paper';
 import { SearchBarComponent } from '../../components/SearchBarComponent';
 import { MapViewComponent } from '../../components/MapViewComponent';
@@ -20,8 +26,12 @@ export function HomeScreen() {
   }, []);
 
   async function loadHistory() {
-    const storedHistory = await getSearchHistory();
-    setHistory(storedHistory);
+    try {
+      const storedHistory = await getSearchHistory();
+      setHistory(storedHistory);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to load search history.', [{ text: 'OK' }]);
+    }
   }
 
   async function handlePlaceSelect(placeId: string) {
@@ -45,8 +55,10 @@ export function HomeScreen() {
       ];
       setHistory(updatedHistory);
       await saveSearchHistory(updatedHistory);
-    } catch (error) {
-      console.error('Error fetching place details:', error);
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to load place details.', [
+        { text: 'OK' },
+      ]);
     } finally {
       setLoading(false);
     }
