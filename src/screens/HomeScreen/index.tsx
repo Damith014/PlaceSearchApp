@@ -4,6 +4,11 @@ import { Text, Divider, Card, ActivityIndicator } from 'react-native-paper';
 import { SearchBarComponent } from '../../components/SearchBarComponent';
 import { MapViewComponent } from '../../components/MapViewComponent';
 import { styles } from './styles';
+import {
+  getSearchHistory,
+  saveSearchHistory,
+} from '../../storage/SearchHistory';
+import { fetchPlaceDetails } from '../../api/googlePlacesApi';
 
 export function HomeScreen() {
   const [selectedPlace, setSelectedPlace] = useState<any>(null);
@@ -13,8 +18,40 @@ export function HomeScreen() {
   useEffect(() => {
     loadHistory();
   }, []);
-  async function loadHistory() {}
-  async function handlePlaceSelect(placeId: string) {}
+
+  async function loadHistory() {
+    const storedHistory = await getSearchHistory();
+    setHistory(storedHistory);
+  }
+
+  async function handlePlaceSelect(placeId: string) {
+    setLoading(true);
+    try {
+      const place = await fetchPlaceDetails(placeId);
+      const newPlace = {
+        placeId,
+        name: place.name,
+        address: place.formatted_address,
+        location: {
+          latitude: place.geometry.location.lat,
+          longitude: place.geometry.location.lng,
+        },
+      };
+
+      setSelectedPlace(newPlace);
+      const updatedHistory = [
+        newPlace,
+        ...history.filter(p => p.placeId !== placeId),
+      ];
+      setHistory(updatedHistory);
+      await saveSearchHistory(updatedHistory);
+    } catch (error) {
+      console.error('Error fetching place details:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={{ flex: 1 }}>
